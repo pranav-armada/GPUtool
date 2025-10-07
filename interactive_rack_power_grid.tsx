@@ -58,7 +58,10 @@ const POWER_W: Record<string, number> = {
   "AMD Compute Node": 584,
   "Intel L40 Node": 0,
   "Intel H100 Node": 5888,
-  "Intel L40s Node": 1600,
+  "Intel L40s Node": 6043,
+  "AMD RTX Node": 5958,
+  "Intel H200-4 Node": 5985,
+  "Intel H200-8 Node": 8270,
   "VAST C-Box": 2300,
   "VAST D-Box": 850,
   "Vast Switch": 150,
@@ -78,24 +81,27 @@ type DeviceSpec = {
 };
 
 const SPEC_ATTRS: Record<string, DeviceSpec> = {
-  "Intel Control Plane Node": {cores:16,sockets:1,threads:32,gpus:0,ramGB:64,bootGB:480,localTB:3.84,ru:1,powerW:249,btu:849.623267,weightLb:41,listPrice:25721,armadaPrice:7887.68, manufacturer:"Intel", info:"Handles orchestration and control plane tasks, coordinating cluster operations."},
-  "Intel Admin Node": {cores:16,sockets:1,threads:16,gpus:0,ramGB:64,bootGB:480,localTB:3.84,ru:1,powerW:249,btu:849.623267,weightLb:41,listPrice:49.6,armadaPrice:7395, manufacturer:"Intel", info:"Provides system administration and management services."},
-  "AMD Control Plane Node": {cores:16,sockets:1,threads:16,gpus:0,ramGB:64,bootGB:480,localTB:3.84,ru:1,powerW:348,btu:1187.425288,weightLb:44.5,listPrice:100000,armadaPrice:100000, manufacturer:"AMD", info:"Runs control plane workloads on AMD architecture for cluster coordination."},
-  "AMD Admin Node": {cores:16,sockets:1,threads:16,gpus:0,ramGB:64,bootGB:480,localTB:3.84,ru:1,powerW:348,btu:1187.425288,weightLb:44.5,listPrice:100000,armadaPrice:100000, manufacturer:"AMD", info:"Provides administration and support utilities on AMD platform."},
-  "Edge Switch": {cores:0,sockets:0,threads:0,gpus:0,ramGB:0,bootGB:0,localTB:0,ru:1,powerW:150,btu:511.821245,weightLb:23.8,listPrice:50000,armadaPrice:17875, info:"Network switch that connects edge devices to the core."},
-  "Edge Firewall": {cores:0,sockets:0,threads:0,gpus:0,ramGB:0,bootGB:0,localTB:0,ru:1,powerW:450,btu:1535,weightLb:15.9,listPrice:46352,armadaPrice:20693, info:"Provides security by filtering and monitoring edge traffic."},
-  "Core Switch": {cores:0,sockets:0,threads:0,gpus:0,ramGB:0,bootGB:0,localTB:0,ru:1,powerW:973,btu:3322,weightLb:10.27,listPrice:16945,armadaPrice:5154, info:"High-throughput switch aggregating traffic in the core network."},
-  "Mgmt Switch": {cores:0,sockets:0,threads:0,gpus:0,ramGB:0,bootGB:0,localTB:0,ru:1,powerW:130,btu:443,weightLb:10.41,listPrice:10000,armadaPrice:3831.81, info:"Dedicated switch for management network traffic."},
-  "POE Switch": {cores:0,sockets:0,threads:0,gpus:0,ramGB:0,bootGB:0,localTB:0,ru:1,powerW:920,btu:3138,weightLb:0,listPrice:0,armadaPrice:0, info:"Distributes Power-over-Ethernet for access devices."},
-  "Intel Compute Node": {cores:64,sockets:2,threads:128,gpus:0,ramGB:512,bootGB:960,localTB:15.36,ru:2,powerW:658,btu:2245,weightLb:95.6,listPrice:126612,armadaPrice:36400, manufacturer:"Intel", info:"Provides general purpose compute resources for workloads."},
-  "AMD Compute Node": {cores:32,sockets:2,threads:64,gpus:0,ramGB:256,bootGB:480,localTB:11.52,ru:1,powerW:584,btu:1992.69,weightLb:41,listPrice:100000,armadaPrice:100000, manufacturer:"Dell R655", info:"AMD EPYC-based compute node optimized for performance and efficiency."},
+  "Intel Control Plane Node": {cores:16,sockets:1,threads:32,gpus:0,ramGB:64,bootGB:480,localTB:3.84,ru:1,powerW:249,btu:849.623267,weightLb:41,listPrice:20750,armadaPrice:8300, manufacturer:"Intel", info:"Handles orchestration and control plane tasks, coordinating cluster operations."},
+  "Intel Admin Node": {cores:16,sockets:1,threads:16,gpus:0,ramGB:64,bootGB:480,localTB:3.84,ru:1,powerW:249,btu:849.623267,weightLb:41,listPrice:7222.91,armadaPrice:7222.91, manufacturer:"Intel", info:"Provides system administration and management services."},
+  "AMD Control Plane Node": {cores:16,sockets:1,threads:16,gpus:0,ramGB:64,bootGB:480,localTB:3.84,ru:1,powerW:348,btu:1187.425288,weightLb:44.5,listPrice:26875,armadaPrice:10750, manufacturer:"AMD", info:"Runs control plane workloads on AMD architecture for cluster coordination."},
+  "AMD Admin Node": {cores:16,sockets:1,threads:16,gpus:0,ramGB:64,bootGB:480,localTB:3.84,ru:1,powerW:348,btu:1187.425288,weightLb:44.5,listPrice:26875,armadaPrice:10750, manufacturer:"AMD", info:"Provides administration and support utilities on AMD platform."},
+  "Edge Switch": {cores:0,sockets:0,threads:0,gpus:0,ramGB:0,bootGB:0,localTB:0,ru:1,powerW:150,btu:511.821245,weightLb:23.8,listPrice:8750,armadaPrice:3500, info:"Network switch that connects edge devices to the core."},
+  "Edge Firewall": {cores:0,sockets:0,threads:0,gpus:0,ramGB:0,bootGB:0,localTB:0,ru:1,powerW:450,btu:1535,weightLb:15.9,listPrice:96032.50,armadaPrice:38413, info:"Provides security by filtering and monitoring edge traffic."},
+  "Core Switch": {cores:0,sockets:0,threads:0,gpus:0,ramGB:0,bootGB:0,localTB:0,ru:1,powerW:973,btu:3322,weightLb:10.27,listPrice:90932.50,armadaPrice:36373, info:"High-throughput switch aggregating traffic in the core network."},
+  "Mgmt Switch": {cores:0,sockets:0,threads:0,gpus:0,ramGB:0,bootGB:0,localTB:0,ru:1,powerW:130,btu:443,weightLb:10.41,listPrice:22215,armadaPrice:8886, info:"Dedicated switch for management network traffic."},
+  "POE Switch": {cores:0,sockets:0,threads:0,gpus:0,ramGB:0,bootGB:0,localTB:0,ru:1,powerW:920,btu:3138,weightLb:0,listPrice:8750,armadaPrice:3500, info:"Distributes Power-over-Ethernet for access devices."},
+  "Intel Compute Node": {cores:64,sockets:2,threads:128,gpus:0,ramGB:512,bootGB:480,localTB:26.88,ru:1,powerW:658,btu:2245,weightLb:47.8,listPrice:64108.43,armadaPrice:25643.37, manufacturer:"Intel", info:"Provides general purpose compute resources for workloads."},
+  "AMD Compute Node": {cores:192,sockets:2,threads:64,gpus:0,ramGB:1024,bootGB:480,localTB:26.88,ru:1,powerW:1474,btu:5029.5,weightLb:45,listPrice:110250,armadaPrice:44100, manufacturer:"Dell R655", info:"AMD EPYC-based compute node optimized for performance and efficiency."},
   "Intel H100 Node": {cores:96,sockets:2,threads:192,gpus:4,ramGB:512,bootGB:1920,localTB:30.72,ru:4,powerW:5888,btu:20096,weightLb:150,listPrice:600000,armadaPrice:1062000, gpuModel:"NVIDIA H100", gpuCountPerNode:4, info:"Accelerates AI and HPC workloads with 4x NVIDIA H100 GPUs."},
   "Intel L40 Node": {cores:64,sockets:2,threads:128,gpus:2,ramGB:512,bootGB:1920,localTB:30.72,ru:4,powerW:1600,btu:5456,weightLb:120,listPrice:0,armadaPrice:0, gpuModel:"NVIDIA L40", gpuCountPerNode:2, info:"Handles graphics and AI inference with 2x NVIDIA L40 GPUs."},
-  "Intel L40s Node": {cores:64,sockets:2,threads:128,gpus:4,ramGB:512,bootGB:1920,localTB:30.72,ru:4,powerW:1600,btu:5456,weightLb:120,listPrice:0,armadaPrice:0, gpuModel:"NVIDIA L40s", gpuCountPerNode:4, info:"Provides accelerated compute with 4x NVIDIA L40s GPUs."},
+  "Intel L40s Node": {cores:96,sockets:2,threads:96,gpus:8,ramGB:3072,bootGB:480,localTB:15.36,ru:4,powerW:6043,btu:20619.57,weightLb:150,listPrice:381250,armadaPrice:152500, gpuModel:"NVIDIA L40s", gpuCountPerNode:8, manufacturer:"Dell XE7740", info:"Provides accelerated compute with 8x NVIDIA L40s GPUs.", acVolts:"100-240 VAC", acAmps:28},
+  "AMD RTX Node": {cores:64,sockets:2,threads:64,gpus:4,ramGB:2048,bootGB:480,localTB:15.36,ru:4,powerW:5958,btu:20329.54,weightLb:151,listPrice:188333.33,armadaPrice:113000, gpuModel:"RTX6000", gpuCountPerNode:4, manufacturer:"Dell XE7745", info:"High-performance workstation GPU node with 4x RTX6000 GPUs.", acVolts:"100-240 VAC", acAmps:27.6},
+  "Intel H200-4 Node": {cores:96,sockets:2,threads:96,gpus:4,ramGB:4096,bootGB:480,localTB:15.36,ru:4,powerW:5985,btu:20421.67,weightLb:157,listPrice:625000,armadaPrice:250000, gpuModel:"NVIDIA H200", gpuCountPerNode:4, manufacturer:"Dell XE7740", info:"Next-gen AI accelerator with 4x NVIDIA H200 GPUs.", acVolts:"100-240 VAC", acAmps:26},
+  "Intel H200-8 Node": {cores:96,sockets:2,threads:96,gpus:8,ramGB:4096,bootGB:480,localTB:7.68,ru:4,powerW:8270,btu:28218.41,weightLb:157,listPrice:937500,armadaPrice:375000, gpuModel:"NVIDIA H200", gpuCountPerNode:8, manufacturer:"Dell XE7740", info:"Maximum AI performance with 8x NVIDIA H200 GPUs.", acVolts:"100-240 VAC", acAmps:38.4},
   "VAST C-Box": {cores:0,sockets:0,threads:0,gpus:0,ramGB:0,bootGB:0,localTB:0,ru:4,powerW:2300,btu:7846,weightLb:0,listPrice:0,armadaPrice:0, info:"Metadata and services node in the VAST storage system."},
   "VAST D-Box": {cores:0,sockets:0,threads:0,gpus:0,ramGB:0,bootGB:550,ru:4,powerW:850,btu:2900,weightLb:0,listPrice:0,armadaPrice:0, info:"Capacity node for VAST storage system."},
   "Vast Switch": {cores:0,sockets:0,threads:0,gpus:0,ramGB:0,bootGB:0,localTB:0,ru:1,powerW:150,btu:511.8,weightLb:0,listPrice:0,armadaPrice:0, info:"Provides fabric connectivity within VAST clusters."},
-  "KVM": {cores:0,sockets:0,threads:0,gpus:0,ramGB:0,bootGB:0,localTB:0,ru:1,powerW:60,btu:205,weightLb:0,listPrice:0,armadaPrice:0, info:"Allows local console access (Keyboard/Video/Mouse)."},
+  "KVM": {cores:0,sockets:0,threads:0,gpus:0,ramGB:0,bootGB:0,localTB:0,ru:1,powerW:60,btu:205,weightLb:0,listPrice:27500,armadaPrice:11000, info:"Allows local console access (Keyboard/Video/Mouse)."},
   "Blanking Plate": {cores:0,sockets:0,threads:0,gpus:0,ramGB:0,bootGB:0,localTB:0,ru:1,powerW:0,btu:0,weightLb:0,listPrice:0,armadaPrice:0, info:"Fills empty rack slots to ensure proper airflow."},
   "sscc140": {cores:32,sockets:2,threads:64,gpus:0,ramGB:512,bootGB:480,localTB:20,ru:2,powerW:650,btu:2200,weightLb:60,listPrice:45000,armadaPrice:30000, manufacturer:"SSCC", info:"Experimental balanced compute node combining moderate core counts with large memory for mixed workloads.", acVolts:"100-240 VAC", acAmps:3.0},
 };
@@ -105,7 +111,7 @@ const SPEC_ATTRS: Record<string, DeviceSpec> = {
  *********************************/
 const DEVICE_GROUPS: Record<string,string[]> = {
   Network: ["Edge Switch","Edge Firewall","Core Switch","Mgmt Switch","POE Switch","Vast Switch","Cradlepoint SDWAN","Pepwave MAX Transit","Pepwave MAX BR2"],
-  "GPU Compute": ["Intel H100 Node","Intel L40 Node","Intel L40s Node"],
+  "GPU Compute": ["Intel H100 Node","Intel L40 Node","Intel L40s Node","AMD RTX Node","Intel H200-4 Node","Intel H200-8 Node"],
   "CPU Compute": ["Intel Compute Node","AMD Compute Node","sscc140"],
   Storage: ["VAST C-Box","VAST D-Box"],
   "Control/KVM": ["Intel Control Plane Node","Intel Admin Node","AMD Control Plane Node","AMD Admin Node","KVM"],
@@ -148,10 +154,21 @@ function CatBadge({ name }:{ name:string }){
 }
 
 function summarize(counts: Record<string, number>) {
+  const excludeFromComputeTotals = ["Intel Control Plane Node", "AMD Control Plane Node", "Intel Admin Node", "AMD Admin Node"];
+
   return Object.entries(counts).reduce((acc, [dev, qty]) => {
     const a = SPEC_ATTRS[dev] || {cores:0,sockets:0,threads:0,gpus:0,ramGB:0,bootGB:0,localTB:0,ru:0,powerW:POWER_W[dev]||0,btu:0,weightLb:0,listPrice:0,armadaPrice:0};
-    acc.cores += a.cores*qty; acc.sockets += a.sockets*qty; acc.threads += a.threads*qty; acc.gpus += a.gpus*qty;
-    acc.ramGB += a.ramGB*qty; acc.bootGB += a.bootGB*qty; acc.localTB += a.localTB*qty; acc.ru += a.ru*qty;
+
+    // Exclude control/admin nodes from compute resource totals
+    const isControlNode = excludeFromComputeTotals.includes(dev);
+
+    if (!isControlNode) {
+      acc.cores += a.cores*qty; acc.sockets += a.sockets*qty; acc.threads += a.threads*qty; acc.gpus += a.gpus*qty;
+      acc.ramGB += a.ramGB*qty; acc.bootGB += a.bootGB*qty; acc.localTB += a.localTB*qty;
+    }
+
+    // Always count RU, power, BTU, weight, and price regardless of node type
+    acc.ru += a.ru*qty;
     acc.powerW += (a.powerW||POWER_W[dev]||0)*qty; acc.btu += a.btu*qty; acc.weightLb += a.weightLb*qty;
     acc.listPrice += a.listPrice*qty; acc.armadaPrice += a.armadaPrice*qty;
     return acc;
@@ -282,16 +299,45 @@ export default function InteractiveRackPowerGrid(){
 
   const [infoDev, setInfoDev] = useState<string | null>(null);
 
-  const activeCounts = countsByRack[activeRack] || {};
-  const activeTotals = useMemo(()=> summarize(activeCounts), [activeCounts]);
+  const activeCounts = activeRack === "All Racks" ? {} : countsByRack[activeRack] || {};
+  const activeTotals = useMemo(()=> {
+    if (activeRack === "All Racks") {
+      // Combine all racks
+      const allCounts: Record<string, number> = {};
+      for (const r of RACKS) {
+        const counts = countsByRack[r] || {};
+        for (const [dev, qty] of Object.entries(counts)) {
+          allCounts[dev] = (allCounts[dev] || 0) + qty;
+        }
+      }
+      return summarize(allCounts);
+    }
+    return summarize(activeCounts);
+  }, [activeCounts, activeRack, countsByRack]);
+
   const activePct = capacityW>0 ? (activeTotals.powerW/capacityW)*100 : 0;
-  const activeGpuBreakdown = useMemo(()=> gpuBreakdown(activeCounts), [activeCounts]);
+  const activeGpuBreakdown = useMemo(()=> {
+    if (activeRack === "All Racks") {
+      const allCounts: Record<string, number> = {};
+      for (const r of RACKS) {
+        const counts = countsByRack[r] || {};
+        for (const [dev, qty] of Object.entries(counts)) {
+          allCounts[dev] = (allCounts[dev] || 0) + qty;
+        }
+      }
+      return gpuBreakdown(allCounts);
+    }
+    return gpuBreakdown(activeCounts);
+  }, [activeCounts, activeRack, countsByRack]);
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center gap-3">
-        <PlugZap className="w-6 h-6" />
-        <h1 className="text-2xl font-semibold">Interactive Rack Power Grid — 5 Racks</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <PlugZap className="w-6 h-6 text-white" />
+          <h1 className="text-2xl font-semibold text-white">Interactive Rack Power Grid — 5 Racks</h1>
+        </div>
+        <img src="/armada-logo.png" alt="Armada Logo" className="h-12" />
       </div>
 
       <Card>
@@ -343,31 +389,61 @@ export default function InteractiveRackPowerGrid(){
       </Card>
 
       <div className="flex items-center gap-2 flex-wrap">
-        <label className="text-sm">Active Rack</label>
+        <label className="text-sm text-white">Active Rack</label>
         <div className="flex gap-2">
           {RACKS.map(r => (
             <button key={r} onClick={()=> setActiveRack(r)} className={`px-3 py-1 rounded-2xl border ${activeRack===r?"bg-black text-white":"bg-white"}`}>{r}</button>
           ))}
+          <button onClick={()=> setActiveRack("All Racks")} className={`px-3 py-1 rounded-2xl border ${activeRack==="All Racks"?"bg-black text-white":"bg-white"}`}>All Racks</button>
         </div>
       </div>
 
       <Card>
         <CardHeader className="pb-2"><CardTitle>{activeRack} — Totals</CardTitle></CardHeader>
-        <CardContent className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 text-sm">
-          <Metric icon={<Cpu className="w-4 h-4"/>} label="Cores/Socket" value={activeTotals.sockets ? Number((activeTotals.cores/activeTotals.sockets).toFixed(1)) : 0} />
+        <CardContent className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 text-sm">
           <Metric icon={<Gauge className="w-4 h-4"/>} label="Sockets" value={activeTotals.sockets} />
           <Metric icon={<Cpu className="w-4 h-4"/>} label="Total Cores" value={activeTotals.cores} />
           <Metric icon={<Gauge className="w-4 h-4"/>} label="GPUs" value={activeTotals.gpus} />
           <Metric icon={<Database className="w-4 h-4"/>} label="RAM (GB)" value={activeTotals.ramGB} />
-          <Metric icon={<HardDrive className="w-4 h-4"/>} label="Boot (GB)" value={activeTotals.bootGB} />
           <Metric icon={<HardDrive className="w-4 h-4"/>} label="Local (TB)" value={activeTotals.localTB} />
           <Metric icon={<Gauge className="w-4 h-4"/>} label="RU" value={activeTotals.ru} />
           <Metric icon={<PlugZap className="w-4 h-4"/>} label="BTU/hr" value={Math.round(activeTotals.btu)} />
           <Metric icon={<Gauge className="w-4 h-4"/>} label="Weight (lb)" value={Math.round(activeTotals.weightLb)} />
-          <Metric icon={<Gauge className="w-4 h-4"/>} label="List $" value={activeTotals.listPrice.toFixed(0)} />
-          <Metric icon={<Gauge className="w-4 h-4"/>} label="Armada $" value={activeTotals.armadaPrice.toFixed(0)} />
-          <Metric icon={<PlugZap className="w-4 h-4"/>} label="% Power" value={formatPct(activePct)} warn={activePct>=100} />
-          <Metric icon={<PlugZap className="w-4 h-4"/>} label="Power (W)" value={activeTotals.powerW.toLocaleString()} />
+          <Metric icon={<Gauge className="w-4 h-4"/>} label="List $" value={`$${activeTotals.listPrice.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`} />
+          <Metric icon={<Gauge className="w-4 h-4"/>} label="Armada $" value={`$${activeTotals.armadaPrice.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`} />
+          {activeRack !== "All Racks" && (
+            <>
+              <Metric icon={<PlugZap className="w-4 h-4"/>} label="% Power" value={formatPct(activePct)} warn={activePct>=100} />
+              <Metric icon={<PlugZap className="w-4 h-4"/>} label="Power (W)" value={activeTotals.powerW.toLocaleString()} />
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2"><CardTitle>{activeRack} — Device Summary</CardTitle></CardHeader>
+        <CardContent className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 text-sm">
+          {(() => {
+            const displayCounts = activeRack === "All Racks"
+              ? (() => {
+                  const allCounts: Record<string, number> = {};
+                  for (const r of RACKS) {
+                    const counts = countsByRack[r] || {};
+                    for (const [dev, qty] of Object.entries(counts)) {
+                      allCounts[dev] = (allCounts[dev] || 0) + qty;
+                    }
+                  }
+                  return allCounts;
+                })()
+              : activeCounts;
+
+            return Object.entries(displayCounts).sort((a,b)=> b[1] - a[1]).map(([dev, qty])=> (
+              <div key={dev} className="px-3 py-2 rounded-xl bg-gray-100">
+                <div className="text-[10px] uppercase tracking-wide opacity-70">{dev}</div>
+                <div className="text-sm font-semibold">{qty} {qty === 1 ? 'unit' : 'units'}</div>
+              </div>
+            ));
+          })()}
         </CardContent>
       </Card>
 
@@ -389,6 +465,7 @@ export default function InteractiveRackPowerGrid(){
         </CardContent>
       </Card>
 
+      {activeRack !== "All Racks" && (
       <Card>
         <CardHeader className="pb-2"><CardTitle>{activeRack} — Devices</CardTitle></CardHeader>
         <CardContent>
@@ -414,60 +491,56 @@ export default function InteractiveRackPowerGrid(){
           </div>
 
           <ScrollArea className="max-h-[60vh] pr-2">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm" style={{minWidth: '1600px', borderCollapse: 'collapse'}}>
               <thead>
-                <tr className="opacity-70 text-left">
-                  <th>Device</th>
-                  <th>Category</th>
-                  <th className="text-right">Qty</th>
-                  <th className="text-right">Cores/Socket</th>
-                  <th className="text-right">Sockets</th>
-                  <th className="text-right">Total Cores</th>
-                  <th className="text-right">GPUs</th>
-                  <th className="text-right">RAM (GB)</th>
-                  <th className="text-right">Boot (GB)</th>
-                  <th className="text-right">Local (TB)</th>
-                  <th className="text-right">RU</th>
-                  <th className="text-right">Max Power (W)</th>
-                  <th className="text-right">Heat (BTU/hr)</th>
-                  <th className="text-right">Weight (lb)</th>
-                  <th className="text-right">List $</th>
-                  <th className="text-right">Armada $</th>
-                  <th className="text-right">Info</th>
-                  <th className="text-right">Edit</th>
+                <tr className="opacity-70 text-left border-b-2">
+                  <th className="px-4 py-2 border-r">Device</th>
+                  <th className="px-4 py-2 border-r">Category</th>
+                  <th className="text-right px-4 py-2 border-r">Qty</th>
+                  <th className="text-right px-4 py-2 border-r">Sockets</th>
+                  <th className="text-right px-4 py-2 border-r">Total Cores</th>
+                  <th className="text-right px-4 py-2 border-r">GPUs</th>
+                  <th className="text-right px-4 py-2 border-r">RAM (GB)</th>
+                  <th className="text-right px-4 py-2 border-r">Local (TB)</th>
+                  <th className="text-right px-4 py-2 border-r">RU</th>
+                  <th className="text-right px-4 py-2 border-r">Max Power (W)</th>
+                  <th className="text-right px-4 py-2 border-r">Heat (BTU/hr)</th>
+                  <th className="text-right px-4 py-2 border-r">Weight (lb)</th>
+                  <th className="text-right px-4 py-2 border-r">List $</th>
+                  <th className="text-right px-4 py-2 border-r">Armada $</th>
+                  <th className="text-right px-4 py-2 border-r">Info</th>
+                  <th className="text-right px-4 py-2">Edit</th>
                 </tr>
               </thead>
               <tbody>
                 {Object.entries(activeCounts).sort((a,b)=> a[0].localeCompare(b[0])).map(([dev, qty])=>{
                   const a = SPEC_ATTRS[dev] || {cores:0,sockets:0,threads:0,gpus:0,ramGB:0,bootGB:0,localTB:0,ru:0,powerW:POWER_W[dev]||0,btu:0,weightLb:0,listPrice:0,armadaPrice:0};
                   return (
-                    <tr key={dev}>
-                      <td className="py-1">{dev}</td>
-                      <td className="py-1"><CatBadge name={dev} /></td>
-                      <td className="py-1 text-right">
+                    <tr key={dev} className="border-b hover:bg-gray-50">
+                      <td className="py-2 px-4 border-r">{dev}</td>
+                      <td className="py-2 px-4 border-r"><CatBadge name={dev} /></td>
+                      <td className="py-2 px-4 text-right border-r">
                         <div className="inline-flex items-center gap-1">
                           <Button onClick={()=> bump(dev,-1)}><Minus className="w-3 h-3"/></Button>
                           <Input className="w-16 text-right" type="number" value={qty} onChange={(e)=> setQty(dev, Number(e.target.value))} />
                           <Button onClick={()=> bump(dev,1)}><Plus className="w-3 h-3"/></Button>
                         </div>
                       </td>
-                      <td className="py-1 text-right">{(a.sockets ? (a.cores / a.sockets) : a.cores)}</td>
-                      <td className="py-1 text-right">{a.sockets*qty}</td>
-                      <td className="py-1 text-right">{a.cores*qty}</td>
-                      <td className="py-1 text-right">{a.gpus*qty}</td>
-                      <td className="py-1 text-right">{a.ramGB*qty}</td>
-                      <td className="py-1 text-right">{a.bootGB*qty}</td>
-                      <td className="py-1 text-right">{(a.localTB*qty).toLocaleString()}</td>
-                      <td className="py-1 text-right">{a.ru*qty}</td>
-                      <td className="py-1 text-right">{(a.powerW*qty).toLocaleString()}</td>
-                      <td className="py-1 text-right">{Math.round(a.btu*qty).toLocaleString()}</td>
-                      <td className="py-1 text-right">{Math.round(a.weightLb*qty).toLocaleString()}</td>
-                      <td className="py-1 text-right">${(a.listPrice*qty).toLocaleString()}</td>
-                      <td className="py-1 text-right">${(a.armadaPrice*qty).toLocaleString()}</td>
-                      <td className="py-1 text-right">
+                      <td className="py-2 px-4 text-right border-r">{a.sockets*qty}</td>
+                      <td className="py-2 px-4 text-right border-r">{a.cores*qty}</td>
+                      <td className="py-2 px-4 text-right border-r">{a.gpus*qty}</td>
+                      <td className="py-2 px-4 text-right border-r">{a.ramGB*qty}</td>
+                      <td className="py-2 px-4 text-right border-r">{(a.localTB*qty).toLocaleString()}</td>
+                      <td className="py-2 px-4 text-right border-r">{a.ru*qty}</td>
+                      <td className="py-2 px-4 text-right border-r">{(a.powerW*qty).toLocaleString()}</td>
+                      <td className="py-2 px-4 text-right border-r">{Math.round(a.btu*qty).toLocaleString()}</td>
+                      <td className="py-2 px-4 text-right border-r">{Math.round(a.weightLb*qty).toLocaleString()}</td>
+                      <td className="py-2 px-4 text-right border-r">${(a.listPrice*qty).toLocaleString()}</td>
+                      <td className="py-2 px-4 text-right border-r">${(a.armadaPrice*qty).toLocaleString()}</td>
+                      <td className="py-2 px-4 text-right border-r">
                         <Button onClick={()=> setInfoDev(dev)}><Info className="w-3 h-3"/> Details</Button>
                       </td>
-                      <td className="py-1 text-right">
+                      <td className="py-2 px-4 text-right">
                         <Button onClick={()=> remove(dev)}><Trash2 className="w-3 h-3"/></Button>
                       </td>
                     </tr>
@@ -475,31 +548,30 @@ export default function InteractiveRackPowerGrid(){
                 })}
               </tbody>
               <tfoot>
-                <tr className="font-semibold border-t">
-                  <td className="py-2">Totals</td>
-                  <td></td>
-                  <td></td>
-                  <td className="text-right">{activeTotals.sockets ? (activeTotals.cores/activeTotals.sockets).toFixed(1) : "0"}</td>
-                  <td className="text-right">{activeTotals.sockets.toLocaleString()}</td>
-                  <td className="text-right">{activeTotals.cores.toLocaleString()}</td>
-                  <td className="text-right">{activeTotals.gpus.toLocaleString()}</td>
-                  <td className="text-right">{activeTotals.ramGB.toLocaleString()}</td>
-                  <td className="text-right">{activeTotals.bootGB.toLocaleString()}</td>
-                  <td className="text-right">{activeTotals.localTB.toLocaleString()}</td>
-                  <td className="text-right">{activeTotals.ru.toLocaleString()}</td>
-                  <td className="text-right">{activeTotals.powerW.toLocaleString()}</td>
-                  <td className="text-right">{Math.round(activeTotals.btu).toLocaleString()}</td>
-                  <td className="text-right">{Math.round(activeTotals.weightLb).toLocaleString()}</td>
-                  <td className="text-right">${activeTotals.listPrice.toLocaleString()}</td>
-                  <td className="text-right">${activeTotals.armadaPrice.toLocaleString()}</td>
-                  <td></td>
-                  <td></td>
+                <tr className="font-semibold border-t-2">
+                  <td className="py-3 px-4 border-r">Totals</td>
+                  <td className="px-4 border-r"></td>
+                  <td className="px-4 border-r"></td>
+                  <td className="text-right px-4 border-r">{activeTotals.sockets.toLocaleString()}</td>
+                  <td className="text-right px-4 border-r">{activeTotals.cores.toLocaleString()}</td>
+                  <td className="text-right px-4 border-r">{activeTotals.gpus.toLocaleString()}</td>
+                  <td className="text-right px-4 border-r">{activeTotals.ramGB.toLocaleString()}</td>
+                  <td className="text-right px-4 border-r">{activeTotals.localTB.toLocaleString()}</td>
+                  <td className="text-right px-4 border-r">{activeTotals.ru.toLocaleString()}</td>
+                  <td className="text-right px-4 border-r">{activeTotals.powerW.toLocaleString()}</td>
+                  <td className="text-right px-4 border-r">{Math.round(activeTotals.btu).toLocaleString()}</td>
+                  <td className="text-right px-4 border-r">{Math.round(activeTotals.weightLb).toLocaleString()}</td>
+                  <td className="text-right px-4 border-r">${activeTotals.listPrice.toLocaleString()}</td>
+                  <td className="text-right px-4 border-r">${activeTotals.armadaPrice.toLocaleString()}</td>
+                  <td className="px-4 border-r"></td>
+                  <td className="px-4"></td>
                 </tr>
               </tfoot>
             </table>
           </ScrollArea>
         </CardContent>
       </Card>
+      )}
 
       {infoDev && (
         <div className="fixed inset-0 bg-black/30 flex justify-end" onClick={()=> setInfoDev(null)}>

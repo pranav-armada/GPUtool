@@ -10,26 +10,26 @@ import { PlugZap, Cpu, Gauge, Database, HardDrive, Plus, Minus, Trash2, Info } f
 /*********************************
  * Minimal UI primitives
  *********************************/
-function Card(props: React.HTMLAttributes<HTMLDivElement>) {
+function Card(props) {
   return <div {...props} className={"rounded-2xl border bg-white "+(props.className||"")} />;
 }
-function CardHeader(props: React.HTMLAttributes<HTMLDivElement>){
+function CardHeader(props){
   return <div {...props} className={"px-4 pt-4 "+(props.className||"")} />;
 }
-function CardContent(props: React.HTMLAttributes<HTMLDivElement>){
+function CardContent(props){
   return <div {...props} className={"px-4 pb-4 "+(props.className||"")} />;
 }
-function CardTitle({children}:{children:React.ReactNode}){ return <h3 className="text-lg font-semibold">{children}</h3>; }
-function Button({children,onClick,disabled,className}:{children:React.ReactNode;onClick?:()=>void;disabled?:boolean;className?:string;}){
+function CardTitle({children}){ return <h3 className="text-lg font-semibold">{children}</h3>; }
+function Button({children,onClick,disabled,className}){
   return (
     <button onClick={onClick} disabled={disabled}
       className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl border shadow-sm ${disabled?"opacity-50 cursor-not-allowed":"hover:bg-gray-50"} ${className||""}`}>{children}</button>
   );
 }
-function Input(props: React.InputHTMLAttributes<HTMLInputElement>){
+function Input(props){
   return <input {...props} className={`border rounded-xl px-2 py-1 ${props.className||""}`} />;
 }
-function Slider({value,min,max,step,onValueChange}:{value:[number];min:number;max:number;step?:number;onValueChange:(v:[number])=>void;}){
+function Slider({value,min,max,step,onValueChange}){
   const [v,setV]=useState(value[0]);
   return (
     <input type="range" min={min} max={max} step={step||1} value={v}
@@ -37,7 +37,7 @@ function Slider({value,min,max,step,onValueChange}:{value:[number];min:number;ma
       className="w-full" />
   );
 }
-function ScrollArea({className,children}:{className?:string;children:React.ReactNode}){
+function ScrollArea({className,children}){
   return <div className={`overflow-auto ${className||""}`}>{children}</div>;
 }
 
@@ -72,12 +72,10 @@ const POWER_W: Record<string, number> = {
   "sscc140": 650,
 };
 
-type DeviceSpec = {
-  cores:number; sockets:number; threads:number; gpus:number; ramGB:number; bootGB:number; localTB:number; ru:number; powerW:number; btu:number; weightLb:number; listPrice:number; armadaPrice:number;
-  gpuModel?: string; gpuCountPerNode?: number; info?: string; manufacturer?: string; sku?: string; acVolts?: string; acAmps?: number;
-};
+// DeviceSpec structure: cores, sockets, threads, gpus, ramGB, bootGB, localTB, ru, powerW, btu, weightLb, listPrice, armadaPrice
+// Optional: gpuModel, gpuCountPerNode, info, manufacturer, sku, acVolts, acAmps
 
-const SPEC_ATTRS: Record<string, DeviceSpec> = {
+const SPEC_ATTRS = {
   "Intel Control Plane Node": {cores:16,sockets:1,threads:32,gpus:0,ramGB:64,bootGB:480,localTB:3.84,ru:1,powerW:249,btu:849.623267,weightLb:41,listPrice:25721,armadaPrice:7887.68, manufacturer:"Intel", info:"Handles orchestration and control plane tasks, coordinating cluster operations."},
   "Intel Admin Node": {cores:16,sockets:1,threads:16,gpus:0,ramGB:64,bootGB:480,localTB:3.84,ru:1,powerW:249,btu:849.623267,weightLb:41,listPrice:49.6,armadaPrice:7395, manufacturer:"Intel", info:"Provides system administration and management services."},
   "AMD Control Plane Node": {cores:16,sockets:1,threads:16,gpus:0,ramGB:64,bootGB:480,localTB:3.84,ru:1,powerW:348,btu:1187.425288,weightLb:44.5,listPrice:100000,armadaPrice:100000, manufacturer:"AMD", info:"Runs control plane workloads on AMD architecture for cluster coordination."},
@@ -103,7 +101,7 @@ const SPEC_ATTRS: Record<string, DeviceSpec> = {
 /*********************************
  * Categorization & Colors
  *********************************/
-const DEVICE_GROUPS: Record<string,string[]> = {
+const DEVICE_GROUPS = {
   Network: ["Edge Switch","Edge Firewall","Core Switch","Mgmt Switch","POE Switch","Vast Switch","Cradlepoint SDWAN","Pepwave MAX Transit","Pepwave MAX BR2"],
   "GPU Compute": ["Intel H100 Node","Intel L40 Node","Intel L40s Node"],
   "CPU Compute": ["Intel Compute Node","AMD Compute Node","sscc140"],
@@ -112,7 +110,7 @@ const DEVICE_GROUPS: Record<string,string[]> = {
   Misc: ["Rack Power","VCPU","Blanking Plate"],
 };
 
-const CATEGORY_COLORS: Record<string,string> = {
+const CATEGORY_COLORS = {
   Network: "bg-blue-100 text-blue-800",
   "GPU Compute": "bg-purple-100 text-purple-800",
   "CPU Compute": "bg-amber-100 text-amber-800",
@@ -121,10 +119,10 @@ const CATEGORY_COLORS: Record<string,string> = {
   Misc: "bg-gray-100 text-gray-800",
 };
 
-const CATEGORY_OF: Record<string,string> = Object.entries(DEVICE_GROUPS).reduce((acc,[cat,items])=>{
+const CATEGORY_OF = Object.entries(DEVICE_GROUPS).reduce((acc,[cat,items])=>{
   items.forEach(d=> acc[d]=cat);
   return acc;
-},{} as Record<string,string>);
+},{});
 
 /*********************************
  * Helpers
@@ -436,27 +434,27 @@ export default function InteractiveRackPowerGrid(){
           </div>
 
           <ScrollArea className="max-h-[60vh] pr-2">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm table-auto" style={{minWidth: '1400px'}}>
               <thead>
                 <tr className="opacity-70 text-left">
-                  <th>Device</th>
-                  <th>Category</th>
-                  <th className="text-right">Qty</th>
-                  <th className="text-right">Cores/Socket</th>
-                  <th className="text-right">Sockets</th>
-                  <th className="text-right">Total Cores</th>
-                  <th className="text-right">GPUs</th>
-                  <th className="text-right">RAM (GB)</th>
-                  <th className="text-right">Boot (GB)</th>
-                  <th className="text-right">Local (TB)</th>
-                  <th className="text-right">RU</th>
-                  <th className="text-right">Max Power (W)</th>
-                  <th className="text-right">Heat (BTU/hr)</th>
-                  <th className="text-right">Weight (lb)</th>
-                  <th className="text-right">List $</th>
-                  <th className="text-right">Armada $</th>
-                  <th className="text-right">Info</th>
-                  <th className="text-right">Edit</th>
+                  <th className="px-2">Device</th>
+                  <th className="px-2">Category</th>
+                  <th className="text-right px-2">Qty</th>
+                  <th className="text-right px-2">Cores/Socket</th>
+                  <th className="text-right px-2">Sockets</th>
+                  <th className="text-right px-2">Total Cores</th>
+                  <th className="text-right px-2">GPUs</th>
+                  <th className="text-right px-2">RAM (GB)</th>
+                  <th className="text-right px-2">Boot (GB)</th>
+                  <th className="text-right px-2">Local (TB)</th>
+                  <th className="text-right px-2">RU</th>
+                  <th className="text-right px-2">Max Power (W)</th>
+                  <th className="text-right px-2">Heat (BTU/hr)</th>
+                  <th className="text-right px-2">Weight (lb)</th>
+                  <th className="text-right px-2">List $</th>
+                  <th className="text-right px-2">Armada $</th>
+                  <th className="text-right px-2">Info</th>
+                  <th className="text-right px-2">Edit</th>
                 </tr>
               </thead>
               <tbody>
@@ -464,32 +462,32 @@ export default function InteractiveRackPowerGrid(){
                   const a = SPEC_ATTRS[dev] || {cores:0,sockets:0,threads:0,gpus:0,ramGB:0,bootGB:0,localTB:0,ru:0,powerW:POWER_W[dev]||0,btu:0,weightLb:0,listPrice:0,armadaPrice:0};
                   return (
                     <tr key={dev}>
-                      <td className="py-1">{dev}</td>
-                      <td className="py-1"><CatBadge name={dev} /></td>
-                      <td className="py-1 text-right">
+                      <td className="py-1 px-2">{dev}</td>
+                      <td className="py-1 px-2"><CatBadge name={dev} /></td>
+                      <td className="py-1 text-right px-2">
                         <div className="inline-flex items-center gap-1">
                           <Button onClick={()=> bump(dev,-1)}><Minus className="w-3 h-3"/></Button>
                           <Input className="w-16 text-right" type="number" value={qty} onChange={(e)=> setQty(dev, Number(e.target.value))} />
                           <Button onClick={()=> bump(dev,1)}><Plus className="w-3 h-3"/></Button>
                         </div>
                       </td>
-                      <td className="py-1 text-right">{(a.sockets ? (a.cores / a.sockets) : a.cores)}</td>
-                      <td className="py-1 text-right">{a.sockets*qty}</td>
-                      <td className="py-1 text-right">{a.cores*qty}</td>
-                      <td className="py-1 text-right">{a.gpus*qty}</td>
-                      <td className="py-1 text-right">{a.ramGB*qty}</td>
-                      <td className="py-1 text-right">{a.bootGB*qty}</td>
-                      <td className="py-1 text-right">{(a.localTB*qty).toLocaleString()}</td>
-                      <td className="py-1 text-right">{a.ru*qty}</td>
-                      <td className="py-1 text-right">{(a.powerW*qty).toLocaleString()}</td>
-                      <td className="py-1 text-right">{Math.round(a.btu*qty).toLocaleString()}</td>
-                      <td className="py-1 text-right">{Math.round(a.weightLb*qty).toLocaleString()}</td>
-                      <td className="py-1 text-right">${(a.listPrice*qty).toLocaleString()}</td>
-                      <td className="py-1 text-right">${(a.armadaPrice*qty).toLocaleString()}</td>
-                      <td className="py-1 text-right">
+                      <td className="py-1 text-right px-2">{(a.sockets ? (a.cores / a.sockets) : a.cores)}</td>
+                      <td className="py-1 text-right px-2">{a.sockets*qty}</td>
+                      <td className="py-1 text-right px-2">{a.cores*qty}</td>
+                      <td className="py-1 text-right px-2">{a.gpus*qty}</td>
+                      <td className="py-1 text-right px-2">{a.ramGB*qty}</td>
+                      <td className="py-1 text-right px-2">{a.bootGB*qty}</td>
+                      <td className="py-1 text-right px-2">{(a.localTB*qty).toLocaleString()}</td>
+                      <td className="py-1 text-right px-2">{a.ru*qty}</td>
+                      <td className="py-1 text-right px-2">{(a.powerW*qty).toLocaleString()}</td>
+                      <td className="py-1 text-right px-2">{Math.round(a.btu*qty).toLocaleString()}</td>
+                      <td className="py-1 text-right px-2">{Math.round(a.weightLb*qty).toLocaleString()}</td>
+                      <td className="py-1 text-right px-2">${(a.listPrice*qty).toLocaleString()}</td>
+                      <td className="py-1 text-right px-2">${(a.armadaPrice*qty).toLocaleString()}</td>
+                      <td className="py-1 text-right px-2">
                         <Button onClick={()=> setInfoDev(dev)}><Info className="w-3 h-3"/> Details</Button>
                       </td>
-                      <td className="py-1 text-right">
+                      <td className="py-1 text-right px-2">
                         <Button onClick={()=> remove(dev)}><Trash2 className="w-3 h-3"/></Button>
                       </td>
                     </tr>
@@ -498,24 +496,24 @@ export default function InteractiveRackPowerGrid(){
               </tbody>
               <tfoot>
                 <tr className="font-semibold border-t">
-                  <td className="py-2">Totals</td>
-                  <td></td>
-                  <td></td>
-                  <td className="text-right">{activeTotals.sockets ? (activeTotals.cores/activeTotals.sockets).toFixed(1) : "0"}</td>
-                  <td className="text-right">{activeTotals.sockets.toLocaleString()}</td>
-                  <td className="text-right">{activeTotals.cores.toLocaleString()}</td>
-                  <td className="text-right">{activeTotals.gpus.toLocaleString()}</td>
-                  <td className="text-right">{activeTotals.ramGB.toLocaleString()}</td>
-                  <td className="text-right">{activeTotals.bootGB.toLocaleString()}</td>
-                  <td className="text-right">{activeTotals.localTB.toLocaleString()}</td>
-                  <td className="text-right">{activeTotals.ru.toLocaleString()}</td>
-                  <td className="text-right">{activeTotals.powerW.toLocaleString()}</td>
-                  <td className="text-right">{Math.round(activeTotals.btu).toLocaleString()}</td>
-                  <td className="text-right">{Math.round(activeTotals.weightLb).toLocaleString()}</td>
-                  <td className="text-right">${activeTotals.listPrice.toLocaleString()}</td>
-                  <td className="text-right">${activeTotals.armadaPrice.toLocaleString()}</td>
-                  <td></td>
-                  <td></td>
+                  <td className="py-2 px-2">Totals</td>
+                  <td className="px-2"></td>
+                  <td className="px-2"></td>
+                  <td className="text-right px-2">{activeTotals.sockets ? (activeTotals.cores/activeTotals.sockets).toFixed(1) : "0"}</td>
+                  <td className="text-right px-2">{activeTotals.sockets.toLocaleString()}</td>
+                  <td className="text-right px-2">{activeTotals.cores.toLocaleString()}</td>
+                  <td className="text-right px-2">{activeTotals.gpus.toLocaleString()}</td>
+                  <td className="text-right px-2">{activeTotals.ramGB.toLocaleString()}</td>
+                  <td className="text-right px-2">{activeTotals.bootGB.toLocaleString()}</td>
+                  <td className="text-right px-2">{activeTotals.localTB.toLocaleString()}</td>
+                  <td className="text-right px-2">{activeTotals.ru.toLocaleString()}</td>
+                  <td className="text-right px-2">{activeTotals.powerW.toLocaleString()}</td>
+                  <td className="text-right px-2">{Math.round(activeTotals.btu).toLocaleString()}</td>
+                  <td className="text-right px-2">{Math.round(activeTotals.weightLb).toLocaleString()}</td>
+                  <td className="text-right px-2">${activeTotals.listPrice.toLocaleString()}</td>
+                  <td className="text-right px-2">${activeTotals.armadaPrice.toLocaleString()}</td>
+                  <td className="px-2"></td>
+                  <td className="px-2"></td>
                 </tr>
               </tfoot>
             </table>
