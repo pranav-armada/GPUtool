@@ -5,7 +5,9 @@
 // - Uses lucide-react for icons (available in preview); if it fails, swap icons for plain text
 
 import React, { useMemo, useState, useCallback, useEffect } from "react";
-import { PlugZap, Cpu, Gauge, Database, HardDrive, Plus, Minus, Trash2, Info } from "lucide-react";
+import { PlugZap, Cpu, Gauge, Database, HardDrive, Plus, Minus, Trash2, Info, Download } from "lucide-react";
+import * as XLSX from 'xlsx-js-style';
+import ExcelJS from 'exceljs';
 
 /*********************************
  * Minimal UI primitives
@@ -260,6 +262,11 @@ export default function InteractiveRackPowerGrid(){
 
   const [activeRack, setActiveRack] = useState<string>(RACKS[0]);
 
+  // Rack layout state (for drag-and-drop positioning)
+  type RackItem = { id: string; name: string; span: number; startU: number };
+  type RackLayout = { items: RackItem[] };
+  const [rackLayouts, setRackLayouts] = useState<Record<string, RackLayout>>({});
+
   const rackSummaries = useMemo(()=> RACKS.map(r => {
     const totals = summarize(countsByRack[r] || {});
     const pct = capacityW>0 ? (totals.powerW/capacityW)*100 : 0;
@@ -330,6 +337,296 @@ export default function InteractiveRackPowerGrid(){
     return gpuBreakdown(activeCounts);
   }, [activeCounts, activeRack, countsByRack]);
 
+  const exportConfiguration = useCallback(() => {
+    const exportData = {
+      version: "1.0",
+      exportDate: new Date().toISOString(),
+      capacityW,
+      racks: countsByRack,
+    };
+
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `rack-configuration-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [countsByRack, capacityW]);
+
+  const exportToExcel = useCallback(() => {
+    const workbook = XLSX.utils.book_new();
+
+    // Summary Sheet
+    const summaryData = [];
+    summaryData.push(['Rack Configuration Export']);
+    summaryData.push(['Export Date:', new Date().toLocaleString()]);
+    summaryData.push(['Capacity (W):', capacityW]);
+    summaryData.push([]);
+    summaryData.push(['Rack', 'Total Cores', 'Sockets', 'GPUs', 'RAM (GB)', 'Local (TB)', 'RU', 'Power (W)', 'BTU/hr', 'Weight (lb)', 'List Price', 'Armada Price']);
+
+    for (const rack of RACKS) {
+      const counts = countsByRack[rack] || {};
+      const totals = summarize(counts);
+      summaryData.push([
+        rack,
+        totals.cores,
+        totals.sockets,
+        totals.gpus,
+        totals.ramGB,
+        totals.localTB,
+        totals.ru,
+        totals.powerW,
+        Math.round(totals.btu),
+        Math.round(totals.weightLb),
+        totals.listPrice,
+        totals.armadaPrice,
+      ]);
+    }
+
+    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+
+    // Create a sheet for each rack
+    for (const rack of RACKS) {
+      const counts = countsByRack[rack] || {};
+      const rackData = [];
+      rackData.push(['Device', 'Category', 'Qty', 'Sockets', 'Total Cores', 'GPUs', 'RAM (GB)', 'Local (TB)', 'RU', 'Power (W)', 'BTU/hr', 'Weight (lb)', 'List $', 'Armada $']);
+
+      Object.entries(counts).sort((a, b) => a[0].localeCompare(b[0])).forEach(([dev, qty]) => {
+        const spec = SPEC_ATTRS[dev] || { cores: 0, sockets: 0, gpus: 0, ramGB: 0, localTB: 0, ru: 0, powerW: POWER_W[dev] || 0, btu: 0, weightLb: 0, listPrice: 0, armadaPrice: 0 };
+        const category = CATEGORY_OF[dev] || 'Misc';
+        rackData.push([
+          dev,
+          category,
+          qty,
+          spec.sockets * qty,
+          spec.cores * qty,
+          spec.gpus * qty,
+          spec.ramGB * qty,
+          spec.localTB * qty,
+          spec.ru * qty,
+          spec.powerW * qty,
+          Math.round(spec.btu * qty),
+          Math.round(spec.weightLb * qty),
+          spec.listPrice * qty,
+          spec.armadaPrice * qty,
+        ]);
+      });
+
+      const totals = summarize(counts);
+      rackData.push([]);
+      rackData.push(['TOTALS', '', '', totals.sockets, totals.cores, totals.gpus, totals.ramGB, totals.localTB, totals.ru, totals.powerW, Math.round(totals.btu), Math.round(totals.weightLb), totals.listPrice, totals.armadaPrice]);
+
+      const rackSheet = XLSX.utils.aoa_to_sheet(rackData);
+      XLSX.utils.book_append_sheet(workbook, rackSheet, rack);
+    }
+
+    // Chart Data Sheet
+    const chartData = [];
+    chartData.push(['CHART DATA - Select ranges below and insert charts in Excel']);
+    chartData.push([]);
+    chartData.push(['=== RACK COMPARISON ===']);
+    chartData.push(['Rack', 'Total Cores', 'GPUs', 'RAM (GB)', 'Power (W)', 'Armada Price']);
+
+    RACKS.forEach(rack => {
+      const counts = countsByRack[rack] || {};
+      const totals = summarize(counts);
+      chartData.push([
+        rack,
+        totals.cores,
+        totals.gpus,
+        totals.ramGB,
+        totals.powerW,
+        totals.armadaPrice,
+      ]);
+    });
+
+    chartData.push([]);
+    chartData.push(['=== GPU BREAKDOWN ===']);
+    chartData.push(['GPU Model', 'Total Count']);
+
+    const allGpuBreakdown: Record<string, number> = {};
+    RACKS.forEach(rack => {
+      const counts = countsByRack[rack] || {};
+      const breakdown = gpuBreakdown(counts);
+      Object.entries(breakdown).forEach(([model, data]) => {
+        allGpuBreakdown[model] = (allGpuBreakdown[model] || 0) + data.gpus;
+      });
+    });
+
+    Object.entries(allGpuBreakdown).forEach(([model, count]) => {
+      chartData.push([model, count]);
+    });
+
+    chartData.push([]);
+    chartData.push(['=== DEVICE CATEGORIES ===']);
+    chartData.push(['Category', 'Total Devices']);
+
+    const categoryCount: Record<string, number> = {};
+    RACKS.forEach(rack => {
+      const counts = countsByRack[rack] || {};
+      Object.keys(counts).forEach(dev => {
+        const cat = CATEGORY_OF[dev] || 'Misc';
+        categoryCount[cat] = (categoryCount[cat] || 0) + 1;
+      });
+    });
+
+    Object.entries(categoryCount).forEach(([cat, count]) => {
+      chartData.push([cat, count]);
+    });
+
+    const chartSheet = XLSX.utils.aoa_to_sheet(chartData);
+    XLSX.utils.book_append_sheet(workbook, chartSheet, 'Chart Data');
+
+    // Rack Visuals Sheet
+    const visualSheet = XLSX.utils.aoa_to_sheet([]);
+    if (!visualSheet['!merges']) visualSheet['!merges'] = [];
+
+    // Define Excel colors for each category (hex codes)
+    const EXCEL_COLORS: Record<string, string> = {
+      Network: 'DBEAFE',      // blue-100
+      "GPU Compute": 'F3E8FF', // purple-100
+      "CPU Compute": 'FEF3C7', // amber-100
+      Storage: 'DCFCE7',       // green-100
+      "Control/KVM": 'FCE7F3', // pink-100
+      Misc: 'F3F4F6',          // gray-100
+    };
+
+    // For each rack, create a visual representation
+    let colOffset = 0;
+    RACKS.forEach((rack, rackIdx) => {
+      const counts = countsByRack[rack] || {};
+
+      // Add rack header
+      XLSX.utils.sheet_add_aoa(visualSheet, [[rack]], { origin: { r: 0, c: colOffset } });
+
+      // Create an array to track which U positions are occupied
+      type DeviceBlock = { name: string; category: string; ru: number; startU: number };
+      const deviceBlocks: DeviceBlock[] = [];
+
+      // Use actual layout positions if available, otherwise fallback to heavy-first
+      const rackLayout = rackLayouts[rack];
+      if (rackLayout && rackLayout.items && rackLayout.items.length > 0) {
+        // Use the actual dragged positions from the web app
+        // Web app: startU is 1-indexed where U1=1 at bottom, U42=42 at top
+        // Excel: we iterate u=0 to 41 where u=0 is U42 (top), u=41 is U1 (bottom)
+        rackLayout.items.forEach(item => {
+          const category = CATEGORY_OF[item.name] || 'Misc';
+          // Convert: if device is at U40 (startU=40), it should be at array index 42-40-item.span+1 = 2
+          // Formula: arrayIndex = 42 - startU - span + 1
+          const arrayStartU = 42 - item.startU - item.span + 1;
+          deviceBlocks.push({
+            name: item.name,
+            category,
+            ru: item.span,
+            startU: arrayStartU
+          });
+        });
+      } else {
+        // Fallback: Sort devices by weight (heavy first) to match web app logic
+        const sortedDevices = Object.entries(counts).sort((a, b) => {
+          const wa = SPEC_ATTRS[a[0]]?.weightLb ?? 0;
+          const wb = SPEC_ATTRS[b[0]]?.weightLb ?? 0;
+          if (wb !== wa) return wb - wa;
+          return a[0].localeCompare(b[0]);
+        });
+
+        // Place devices from bottom to top
+        let currentU = 41; // Start from bottom (0-indexed, so 41 is U42)
+        for (const [devName, qty] of sortedDevices) {
+          const spec = SPEC_ATTRS[devName];
+          if (!spec) continue;
+
+          for (let i = 0; i < qty; i++) {
+            const ru = spec.ru;
+            if (currentU - ru + 1 < 0) break; // No more space
+
+            const category = CATEGORY_OF[devName] || 'Misc';
+            deviceBlocks.push({ name: devName, category, ru, startU: currentU - ru + 1 });
+            currentU -= ru;
+          }
+        }
+      }
+
+      // Add U labels and device visualization
+      let lastDeviceIdx = -1;
+      for (let u = 0; u < 42; u++) {
+        const uNum = 42 - u; // U42 at top, U1 at bottom
+        const rowIdx = u + 2;
+
+        // Find which device block this U belongs to
+        const deviceIdx = deviceBlocks.findIndex(d => u >= d.startU && u < d.startU + d.ru);
+
+        if (deviceIdx !== -1) {
+          const device = deviceBlocks[deviceIdx];
+
+          // Only write device name on first row of the block
+          if (deviceIdx !== lastDeviceIdx) {
+            XLSX.utils.sheet_add_aoa(visualSheet, [[`U${uNum}`, device.name]], { origin: { r: rowIdx, c: colOffset } });
+
+            // Add color to the device cell
+            const cellAddress = XLSX.utils.encode_cell({ r: rowIdx, c: colOffset + 1 });
+            const bgColor = EXCEL_COLORS[device.category] || EXCEL_COLORS.Misc;
+            if (!visualSheet[cellAddress]) visualSheet[cellAddress] = { t: 's', v: device.name };
+            visualSheet[cellAddress].s = {
+              fill: { fgColor: { rgb: bgColor } },
+              alignment: { vertical: 'center', horizontal: 'center' }
+            };
+
+            // Add merge for device name column if device spans multiple U
+            if (device.ru > 1) {
+              visualSheet['!merges'].push({
+                s: { r: rowIdx, c: colOffset + 1 },
+                e: { r: rowIdx + device.ru - 1, c: colOffset + 1 }
+              });
+            }
+            lastDeviceIdx = deviceIdx;
+          } else {
+            // For subsequent rows of same device, just add U label
+            XLSX.utils.sheet_add_aoa(visualSheet, [[`U${uNum}`]], { origin: { r: rowIdx, c: colOffset } });
+
+            // Color the merged cells too
+            const device = deviceBlocks[deviceIdx];
+            const cellAddress = XLSX.utils.encode_cell({ r: rowIdx, c: colOffset + 1 });
+            const bgColor = EXCEL_COLORS[device.category] || EXCEL_COLORS.Misc;
+            if (!visualSheet[cellAddress]) visualSheet[cellAddress] = { t: 's', v: '' };
+            visualSheet[cellAddress].s = {
+              fill: { fgColor: { rgb: bgColor } },
+              alignment: { vertical: 'center', horizontal: 'center' }
+            };
+          }
+        } else {
+          // Empty slot
+          XLSX.utils.sheet_add_aoa(visualSheet, [[`U${uNum}`, '---']], { origin: { r: rowIdx, c: colOffset } });
+          lastDeviceIdx = -1;
+        }
+      }
+
+      // Add totals below rack
+      const totals = summarize(counts);
+      XLSX.utils.sheet_add_aoa(visualSheet, [
+        [''],
+        ['Totals:'],
+        [`Cores: ${totals.cores}`],
+        [`GPUs: ${totals.gpus}`],
+        [`RAM: ${totals.ramGB} GB`],
+        [`Power: ${totals.powerW} W`],
+        [`RU Used: ${totals.ru}/42`]
+      ], { origin: { r: 45, c: colOffset } });
+
+      colOffset += 3; // Move to next rack position
+    });
+
+    XLSX.utils.book_append_sheet(workbook, visualSheet, 'Rack Visuals');
+
+    // Write and download
+    XLSX.writeFile(workbook, `rack-configuration-${new Date().toISOString().split('T')[0]}.xlsx`);
+  }, [countsByRack, capacityW, rackLayouts]);
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
@@ -337,7 +634,17 @@ export default function InteractiveRackPowerGrid(){
           <PlugZap className="w-6 h-6 text-white" />
           <h1 className="text-2xl font-semibold text-white">Interactive Rack Power Grid — 5 Racks</h1>
         </div>
-        <img src="/armada-logo.png" alt="Armada Logo" className="h-12" />
+        <div className="flex items-center gap-3">
+          <Button onClick={exportConfiguration} className="bg-white">
+            <Download className="w-4 h-4" />
+            Export JSON
+          </Button>
+          <Button onClick={exportToExcel} className="bg-white">
+            <Download className="w-4 h-4" />
+            Export Excel
+          </Button>
+          <img src="/armada-logo.png" alt="Armada Logo" className="h-12" />
+        </div>
       </div>
 
       <Card>
@@ -384,6 +691,8 @@ export default function InteractiveRackPowerGrid(){
             countsByRack={countsByRack}
             capacityW={capacityW}
             onShowDetails={(dev)=> setInfoDev(dev)}
+            layouts={rackLayouts}
+            setLayouts={setRackLayouts}
           />
         </CardContent>
       </Card>
@@ -628,20 +937,19 @@ type RackItem = { id: string; name: string; span: number; startU: number };
 
 type RackLayout = { items: RackItem[] };
 
-function RackVisuals({ racks, countsByRack, capacityW, onShowDetails }:{
+function RackVisuals({ racks, countsByRack, capacityW, onShowDetails, layouts, setLayouts }:{
   racks: string[];
   countsByRack: Record<string, Record<string, number>>;
   capacityW: number;
   onShowDetails: (dev:string)=>void;
+  layouts: Record<string, RackLayout>;
+  setLayouts: React.Dispatch<React.SetStateAction<Record<string, RackLayout>>>;
 }){
   // Toggle: free placement (true) vs legacy packed (false)
   const [freePlacement, setFreePlacement] = useState<boolean>(true);
 
   // Manual ordering list from previous version (used when freePlacement = false)
   const [orders, setOrders] = useState<Record<string, string[]>>({});
-
-  // Explicit per-U layouts when freePlacement = true
-  const [layouts, setLayouts] = useState<Record<string, RackLayout>>({});
 
   // DnD state
   const [hoverByRack, setHoverByRack] = useState<Record<string, number|null>>({});
